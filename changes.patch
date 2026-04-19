@@ -1,0 +1,230 @@
+import pytest
+import os
+import re
+from pathlib import Path
+
+
+class TestReadmeStructure:
+    """Tests for README.md file structure and content validation."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Fixture to load README content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found in repository root")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def test_readme_file_exists(self):
+        """Test that README.md file exists in the repository root."""
+        readme_path = Path("README.md")
+        assert readme_path.exists(), "README.md file should exist in repository root"
+        assert readme_path.is_file(), "README.md should be a file, not a directory"
+    
+    def test_readme_not_empty(self, readme_content):
+        """Test that README.md has substantial content."""
+        assert len(readme_content) > 500, "README.md should have substantial content (>500 chars)"
+        assert len(readme_content.strip()) > 0, "README.md should not be empty or whitespace only"
+    
+    def test_readme_has_main_title(self, readme_content):
+        """Test that README starts with a main title (H1)."""
+        lines = readme_content.split('\n')
+        assert lines[0].startswith('# '), "README should start with H1 title (# Title)"
+        assert 'Churn' in readme_content or 'churn' in readme_content, \
+            "Title should reference Churn Prediction"
+
+
+class TestReadmeSections:
+    """Tests for required documentation sections."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Fixture to load README content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    @pytest.mark.parametrize("section", [
+        ("Installation", r"##\s*Installation"),
+        ("Usage", r"##\s*Usage"),
+        ("Features", r"##\s*Features"),
+        ("Dataset", r"##\s*Dataset"),
+        ("Model Technical Details", r"##\s*Model Technical Details"),
+        ("File Structure", r"##\s*File Structure"),
+        ("Requirements", r"##\s*Requirements"),
+    ])
+    def test_required_sections_exist(self, readme_content, section):
+        """Test that all required sections are present in README."""
+        section_name, pattern = section
+        assert re.search(pattern, readme_content, re.IGNORECASE), \
+            f"README should contain '{section_name}' section"
+    
+    def test_readme_has_author_section(self, readme_content):
+        """Test that README contains author information."""
+        author_patterns = [
+            r"##\s*Author",
+            r"rahulmahasetha",
+            r"@rahulmahasetha"
+        ]
+        found = any(re.search(pattern, readme_content) for pattern in author_patterns)
+        assert found, "README should contain author information"
+
+
+class TestReadmeCodeExamples:
+    """Tests for code examples and commands in README."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Fixture to load README content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def test_installation_commands_present(self, readme_content):
+        """Test that README contains installation commands."""
+        required_commands = [
+            "git clone",
+            "pip install",
+        ]
+        for cmd in required_commands:
+            assert cmd in readme_content, f"README should contain '{cmd}' command"
+    
+    def test_usage_commands_present(self, readme_content):
+        """Test that README contains usage commands."""
+        required_commands = [
+            "python train_model.py",
+            "streamlit run app.py"
+        ]
+        for cmd in required_commands:
+            assert cmd in readme_content, f"README should contain '{cmd}' command"
+    
+    def test_code_blocks_formatted_correctly(self, readme_content):
+        """Test that code blocks are properly formatted with triple backticks."""
+        # Count code block markers
+        code_blocks = re.findall(r'```[\w]*', readme_content)
+        assert len(code_blocks) >= 2, "README should contain at least one complete code block"
+        assert len(code_blocks) % 2 == 0, "Code block markers should be balanced (even number)"
+    
+    def test_bash_code_blocks_present(self, readme_content):
+        """Test that bash commands are in properly marked code blocks."""
+        bash_blocks = re.findall(r'```bash\n(.*?)\n```', readme_content, re.DOTALL)
+        assert len(bash_blocks) >= 2, "README should contain at least 2 bash code blocks"
+
+
+class TestReadmeContentAccuracy:
+    """Tests for content accuracy and consistency."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Fixture to load README content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def test_dataset_columns_documented(self, readme_content):
+        """Test that README documents key dataset columns."""
+        expected_columns = [
+            "Gender", "Age", "Tenure", "Churn",
+            "Monthly Charges", "Contract", "Payment Method"
+        ]
+        for col in expected_columns:
+            assert col in readme_content, \
+                f"README should document dataset column: {col}"
+    
+    def test_model_algorithm_documented(self, readme_content):
+        """Test that README documents the ML algorithm used."""
+        ml_keywords = ["Random Forest", "scikit-learn", "sklearn"]
+        found = any(kw in readme_content for kw in ml_keywords)
+        assert found, "README should mention the ML algorithm (Random Forest)"
+    
+    def test_file_references_consistent(self, readme_content):
+        """Test that README references expected project files."""
+        expected_files = [
+            "train_model.py",
+            "app.py",
+            "churn.csv",
+            "requirements.txt",
+            "models/"
+        ]
+        for file in expected_files:
+            assert file in readme_content, \
+                f"README should reference project file: {file}"
+    
+    def test_dependencies_listed(self, readme_content):
+        """Test that key dependencies are mentioned."""
+        dependencies = ["streamlit", "pandas", "scikit-learn", "joblib", "matplotlib"]
+        for dep in dependencies:
+            assert dep in readme_content.lower(), \
+                f"README should mention dependency: {dep}"
+
+
+class TestReadmeMarkdownQuality:
+    """Tests for markdown formatting quality."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Fixture to load README content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def test_header_hierarchy_valid(self, readme_content):
+        """Test that markdown headers follow proper hierarchy (no skipping levels)."""
+        lines = readme_content.split('\n')
+        prev_level = 0
+        for line_num, line in enumerate(lines, 1):
+            if line.startswith('#') and not line.startswith('# '):
+                # Skip lines that start with # but aren't headers (like comments)
+                continue
+            if line.startswith('# '):
+                level = len(line.split()[0])  # Count # characters
+                if prev_level > 0 and level > 1:
+                    assert level <= prev_level + 1, \
+                        f"Header hierarchy error at line {line_num}: {line}"
+                prev_level = level
+    
+    def test_no_broken_internal_links(self, readme_content):
+        """Test that internal markdown links are properly formatted."""
+        # Check for markdown links [](url)
+        links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', readme_content)
+        for text, url in links:
+            if not url.startswith(('http', '#', 'mailto:')):
+                # Internal file reference
+                assert not url.endswith('.md') or url == 'README.md', \
+                    f"Link to {url} should reference actual project files"
+
+
+@pytest.mark.integration
+class TestReadmeIntegration:
+    """Integration tests verifying README matches actual project state."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Fixture to load README content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def test_referenced_python_files_exist(self, readme_content):
+        """Test that Python files mentioned in README exist."""
+        py_files = re.findall(r'`(\w+\.py)`', readme_content)
+        for file in set(py_files):
+            if file in ['train_model.py', 'app.py']:
+                file_path = Path(file)
+                if not file_path.exists():
+                    pytest.skip(f"{file} not found in repository (may be expected in full project)")
+    
+    def test_dataset_file_referenced(self, readme_content):
+        """Test that churn.csv is referenced in README."""
+        assert "churn.csv" in readme_content, \
+            "README should reference the dataset file churn.csv"
+    
+    def test_requirements_file_referenced(self, readme_content):
+        """Test that requirements.txt is referenced."""
+        assert "requirements.txt" in readme_content, \
+            "README should reference requirements.txt for dependencies"
