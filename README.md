@@ -1,123 +1,175 @@
-# Customer Churn Prediction
+ # Customer Churn Prediction
+ 
+ ![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)
+ ![Streamlit](https://img.shields.io/badge/Streamlit-1.0+-red.svg)
+ ![scikit-learn](https://img.shields.io/badge/scikit--learn-latest-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+ 
+ A machine learning project for predicting customer churn using Random Forest classification. This project includes a complete training pipeline with class imbalance handling and an interactive Streamlit web application for real-time predictions.
+ 
+ 
+ ## Installation
+ 
+ 1. Clone the repository:
+ ```bash
+git clone https://github.com/rahulmahasetha/churn-prediction.git
+cd churn-prediction
+ ```
 
-![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.0+-red.svg)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-latest-orange.svg)
+ 2. Install required dependencies:
+ ```bash
+pip install -r requirements.txt
+ ```
 
-A machine learning project for predicting customer churn using Random Forest classification. This project includes a complete training pipeline with class imbalance handling and an interactive Streamlit web application for real-time predictions.
-
-## Features
-
-- **Random Forest Model**: Robust ensemble classifier with optimized hyperparameters
-- **Class Imbalance Handling**: Automatic computation of class weights for imbalanced datasets
-- **Feature Importance Analysis**: Identification of key factors driving customer churn
-- **Interactive Streamlit UI**: User-friendly web interface with organized input forms
-- **Data Preprocessing Pipeline**: Automated encoding and scaling of features
-- **Model Persistence**: Save and load trained models, scalers, and encoders
-
-## Prerequisites
-
-- Python 3.7 or higher
-- pip package manager
-- `churn.csv` dataset in the root directory
-
-## Installation
-
-1. Clone the repository:
-```bash
-2. Install required dependencies:
-```bash
-3. Ensure the dataset `churn.csv` is present in the root directory.
-
-## Usage
-
-### Training the Model
-
-Run the training script to preprocess data, train the model, and save artifacts:
-
-```bash
-This will:
-- Create a `models/` directory
-- Save the trained model, scaler, and encoders
-- Display model performance metrics and feature importance rankings
-- Generate classification report and confusion matrix
-
-### Running the Web Application
-
-Launch the interactive Streamlit app:
-
-```bash
-The application features:
-- Two-column layout for organized data input
-- Real-time churn probability prediction
-- Model accuracy display in sidebar
-- Support for all categorical and numerical features
-
-## Project Structure
-
+ 3. Ensure the dataset `churn.csv` is present in the root directory.
+ 
+ ## Usage
+ 
+ Run the training script to preprocess data, train the model, and save artifacts:
+ 
+ ```bash
+python train_model.py
 ```
-## Model Details
+ 
+ This will:
+ - Create a `models/` directory
+ 
+ Launch the interactive Streamlit app:
+ 
+ ```bash
+streamlit run app.py
+```
+ 
+ The application features:
+ - Two-column layout for organized data input
+ ## Project Structure
+ 
+ ```
+churn-prediction/
+├── churn.csv                 # Dataset file
+├── train_model.py           # Model training script
+├── app.py                   # Streamlit web application
+├── requirements.txt         # Python dependencies
+├── models/                  # Directory for saved model artifacts
+│   └── (generated files)
+└── README.md               # Project documentation
+```
 
-### Algorithm
-- **Type**: Random Forest Classifier
-- **Parameters**:
-  - `n_estimators=100`: Number of trees in the forest
-  - `max_depth=10`: Maximum depth of trees
-  - `min_samples_split=20`: Minimum samples required to split a node
+## How It Works
+
+The ML pipeline follows these steps:
+
+1. **Data Loading**: Load customer data from `churn.csv`
+2. **Preprocessing**:
+   - **Label Encoding**: Convert categorical features to numerical values
+   - **StandardScaler**: Normalize numerical features for optimal model performance
+3. **Class Imbalance Handling**: Compute balanced class weights to address uneven churn distribution
+4. **Model Training**: Train Random Forest classifier with 100 estimators and optimized hyperparameters
+5. **Evaluation**: Generate accuracy, precision, recall metrics and feature importance analysis
+6. **Prediction**: Deploy trained model in Streamlit app for real-time churn prediction
+ 
+ ## Model Details
+ 
+   - `n_estimators=100`: Number of trees in the forest
+   - `max_depth=10`: Maximum depth of trees
+   - `min_samples_split=20`: Minimum samples required to split a node
   - `min_samples_leaf=10`: Minimum samples required at leaf node
-  - `class_weight`: Balanced weights for handling imbalanced classes
-  - `random_state=42`: Reproducibility seed
-### Data Preprocessing
-1. **Categorical Encoding**: Label Encoding for all object-type columns
-2. **Feature Scaling**: StandardScaler for numerical feature normalization
-3. **Train/Test Split**: 80/20 split with stratification to maintain class distribution
-4. **Class Imbalance Handling**: Computation of balanced class weights using `sklearn.utils.class_weight`
-
-### Input Data Format
-
-The `churn.csv` dataset should contain the following:
-
-**Target Variable:**
-- `Churn`: Binary indicator (0 = No, 1 = Yes)
-
-**Categorical Features:**
-- `Gender`: Customer gender
+   - `class_weight`: Balanced weights for handling imbalanced classes
+   - `random_state=42`: Reproducibility seed
+ 
+ 
+ **Categorical Features:**
+ - `Gender`: Customer gender
+- `Partner`: Whether customer has a partner (Yes/No)
+- `Dependents`: Whether customer
 - `Partner`: Whether customer has a partner (Yes/No)
 - `Dependents`: Whether customer has dependents (Yes/No)
-- Other categorical columns (automatically encoded)
+- `Contract Type`: Type of contract (Month-to-month/One year/Two year)
+- `Payment Method`: Payment method (Electronic check/Mailed check/Bank transfer/Credit card)
+- `Internet Service`: Type of internet service (DSL/Fiber optic/No)
+- `Phone Service`: Whether customer has phone service (Yes/No)
+- `Multiple Lines`: Whether customer has multiple lines (Yes/No)
+- `TV`: Whether customer has TV service (Yes/No)
+- `Streaming`: Whether customer has streaming service (Yes/No)
 
 **Numerical Features:**
-- `Age`: Customer age
-- `Tenure`: Number of months as customer
-- Other numerical columns (automatically scaled)
+- `Age`: Customer age (1-120)
+- `Tenure`: Number of months as customer (0-72)
+- `Monthly Charges`: Monthly charges amount
+- `Total Charges`: Total charges amount
 
-## Outputs
+## Results & Evaluation
 
-### Model Performance Metrics
-- **Accuracy Score**: Overall prediction accuracy
-- **Classification Report**: Precision, recall, F1-score per class
-- **Confusion Matrix**: True vs predicted class counts
+The model provides comprehensive evaluation metrics:
 
-### Feature Importance
-Ranked list of features contributing most to churn prediction, helping identify key business drivers.
+- **Accuracy**: Overall prediction accuracy
+- **Precision**: Ratio of correctly predicted churn cases
+- **Recall**: Ability to identify actual churn cases
+- **Classification Report**: Detailed per-class metrics
+- **Feature Importance**: Visualization of which features most influence churn predictions
 
-### Predictions
-- Binary churn prediction (Yes/No)
-- Probability scores for churn risk assessment
+Top predictive features typically include contract type, tenure, monthly charges, and payment method.
 
-## Dependencies
+## Sample Usage Examples
 
-- `streamlit`: Web application framework
-- `pandas`: Data manipulation and analysis
-- `scikit-learn`: Machine learning algorithms and preprocessing
-- `matplotlib`: Visualization (for feature importance plots)
-- `joblib`: Model serialization and deserialization
-- `numpy`: Numerical computations
+### Example 1: Low Risk Customer
+- **Profile**: 2-year contract, 60 months tenure, automatic bank transfer
+- **Prediction**: Likely to stay (No Churn)
+- **Confidence**: High
 
-## License
+### Example 2: High Risk Customer  
+- **Profile**: Month-to-month contract, 2 months tenure, electronic check payment
+- **Prediction**: Likely to churn (Yes)
+- **Confidence**: High
 
-This project is open source and available under the MIT License.
+### Interpreting Results
+- **Churn = No**: Customer is predicted to remain with the service
+- **Churn = Yes**: Customer is at risk of leaving; consider retention strategies
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Missing churn.csv file**
+```
+FileNotFoundError: churn.csv not found
+```
+**Solution**: Ensure the dataset file is in the root directory. Download or create the CSV file with the required columns.
+
+**2. Module not found errors**
+```
+ModuleNotFoundError: No module named 'sklearn'
+```
+**Solution**: Install dependencies using `pip install -r requirements.txt`
+
+**3. Permission errors when creating models/ directory**
+```
+PermissionError: [Errno 13] Permission denied: 'models/'
+```
+**Solution**: Ensure you have write permissions in the project directory, or manually create the `models/` directory.
+
+**4. Streamlit port already in use**
+```
+Address already in use
+```
+**Solution**: Use a different port: `streamlit run app.py --server.port 8502`
 
 ## Contributing
 
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with [scikit-learn](https://scikit-learn.org/) for machine learning
+- Web interface powered by [Streamlit](https://streamlit.io/)
+- Dataset inspired by telecom customer churn scenarios
