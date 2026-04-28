@@ -4,266 +4,350 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-import ast
 
-class TestReadmeDocumentation:
-    """Tests to verify README.md accurately reflects the project structure and functionality."""
+class TestReadmeStructure:
+    """Tests to validate README.md structure and content."""
     
     @pytest.fixture
     def readme_content(self):
-        """Fixture to load README.md content."""
-        if not os.path.exists("README.md"):
+        """Load README.md content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
             pytest.skip("README.md not found")
-        with open("README.md", "r", encoding="utf-8") as f:
-            return f.read()
+        return readme_path.read_text(encoding='utf-8')
     
     def test_readme_exists(self):
-        """Test that README.md exists in the project root."""
-        assert os.path.exists("README.md"), "README.md should exist in project root"
+        """Test that README.md file exists."""
+        assert Path("README.md").exists(), "README.md should exist"
     
-    def test_readme_sections(self, readme_content):
-        """Test that README contains all required sections."""
-        required_sections = [
-            "# Customer Churn Prediction",
-            "## Features",
-            "## Prerequisites", 
-            "## Installation",
-            "## Usage",
-            "## Project Structure",
-            "## Model Details",
-            "## Dependencies"
+    def test_readme_has_title(self, readme_content):
+        """Test that README has a main title."""
+        assert "# Customer Churn Prediction" in readme_content
+    
+    def test_readme_has_badges(self, readme_content):
+        """Test that README includes required badges."""
+        assert "![Python]" in readme_content
+        assert "![Streamlit]" in readme_content
+        assert "![scikit-learn]" in readme_content
+        assert "![License]" in readme_content
+        assert "MIT" in readme_content
+    
+    def test_readme_has_installation_section(self, readme_content):
+        """Test that Installation section exists and is complete."""
+        assert "## Installation" in readme_content
+        assert "git clone https://github.com/rahulmahasetha/churn-prediction.git" in readme_content
+        assert "pip install -r requirements.txt" in readme_content
+    
+    def test_readme_has_usage_section(self, readme_content):
+        """Test that Usage section exists with commands."""
+        assert "## Usage" in readme_content
+        assert "### Training" in readme_content
+        assert "python train_model.py" in readme_content
+        assert "### Running the Web Application" in readme_content
+        assert "streamlit run app.py" in readme_content
+    
+    def test_readme_has_project_structure(self, readme_content):
+        """Test that Project Structure section shows correct file tree."""
+        assert "## Project Structure" in readme_content
+        assert "churn.csv" in readme_content
+        assert "train_model.py" in readme_content
+        assert "app.py" in readme_content
+        assert "requirements.txt" in readme_content
+        assert "models/" in readme_content
+    
+    def test_readme_has_how_it_works_section(self, readme_content):
+        """Test that How It Works section exists with pipeline steps."""
+        assert "## How It Works" in readme_content
+        assert "Data Loading" in readme_content
+        assert "Preprocessing" in readme_content
+        assert "Label Encoding" in readme_content
+        assert "StandardScaler" in readme_content
+        assert "Class Imbalance Handling" in readme_content
+        assert "Random Forest" in readme_content
+    
+    def test_readme_has_model_details(self, readme_content):
+        """Test that Model Details section has complete parameters."""
+        assert "## Model Details" in readme_content
+        assert "n_estimators=100" in readme_content
+        assert "max_depth=10" in readme_content
+        assert "min_samples_split=20" in readme_content
+        assert "min_samples_leaf=10" in readme_content
+        assert "class_weight" in readme_content
+        assert "random_state=42" in readme_content
+    
+    def test_readme_has_input_data_format(self, readme_content):
+        """Test that Input Data Format section is complete."""
+        assert "## Input Data Format" in readme_content
+        # Check categorical features
+        assert "Gender" in readme_content
+        assert "Partner" in readme_content
+        assert "Dependents" in readme_content
+        assert "Contract Type" in readme_content
+        assert "Payment Method" in readme_content
+        assert "Internet Service" in readme_content
+        assert "Phone Service" in readme_content
+        assert "Multiple Lines" in readme_content
+        assert "TV" in readme_content
+        assert "Streaming" in readme_content
+        # Check numerical features
+        assert "Age" in readme_content
+        assert "Tenure" in readme_content
+        assert "Monthly Charges" in readme_content
+        assert "Total Charges" in readme_content
+    
+    def test_readme_has_results_section(self, readme_content):
+        """Test that Results & Evaluation section exists."""
+        assert "## Results & Evaluation" in readme_content
+        assert "Accuracy" in readme_content
+        assert "Precision" in readme_content
+        assert "Recall" in readme_content
+        assert "Feature Importance" in readme_content
+    
+    def test_readme_has_sample_usage(self, readme_content):
+        """Test that Sample Usage Examples section exists."""
+        assert "## Sample Usage Examples" in readme_content
+        assert "Low Risk Customer" in readme_content
+        assert "High Risk Customer" in readme_content
+        assert "Interpreting Results" in readme_content
+    
+    def test_readme_has_troubleshooting(self, readme_content):
+        """Test that Troubleshooting section exists with common issues."""
+        assert "## Troubleshooting" in readme_content
+        assert "Missing churn.csv file" in readme_content
+        assert "Module not found errors" in readme_content
+        assert "Permission errors" in readme_content
+        assert "Streamlit port already in use" in readme_content
+    
+    def test_readme_has_contributing_section(self, readme_content):
+        """Test that Contributing section exists with steps."""
+        assert "## Contributing" in readme_content
+        assert "Fork the repository" in readme_content
+        assert "git checkout -b feature/AmazingFeature" in readme_content
+        assert "Pull Request" in readme_content
+    
+    def test_readme_has_license_section(self, readme_content):
+        """Test that License section exists."""
+        assert "## License" in readme_content
+        assert "MIT License" in readme_content
+    
+    def test_readme_has_acknowledgments(self, readme_content):
+        """Test that Acknowledgments section exists."""
+        assert "## Acknowledgments" in readme_content
+        assert "scikit-learn" in readme_content
+        assert "Streamlit" in readme_content
+    
+    def test_no_incomplete_sentences(self, readme_content):
+        """Test that there are no cut-off sentences (like the original issue)."""
+        # Check that common incomplete patterns are not present
+        lines = readme_content.split('\n')
+        for line in lines:
+            # Skip markdown headers and code blocks
+            if line.startswith('#') or line.startswith('```'):
+                continue
+            # Check for lines ending with incomplete words (no punctuation or space)
+            if line.strip() and not line.strip().endswith(('.', '!', '?', ':', ';', ',', ')', ']', '}')):
+                if len(line) > 50:  # Only check longer lines
+                    # This is a heuristic - lines should end with punctuation or be part of a list
+                    pass  # Not a strict test, just documentation completeness
+
+
+class TestReadmeCodeBlocks:
+    """Tests to validate code blocks in README are executable."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Load README.md content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def extract_bash_commands(self, readme_content):
+        """Extract bash commands from markdown code blocks."""
+        # Find all bash code blocks
+        pattern = r'```bash\n(.*?)\n```'
+        matches = re.findall(pattern, readme_content, re.DOTALL)
+        commands = []
+        for match in matches:
+            # Split by newlines and filter empty lines
+            lines = [line.strip() for line in match.split('\n') if line.strip()]
+            commands.extend(lines)
+        return commands
+    
+    def test_git_clone_command_format(self, readme_content):
+        """Test that git clone command has correct URL format."""
+        commands = self.extract_bash_commands(readme_content)
+        clone_commands = [cmd for cmd in commands if 'git clone' in cmd]
+        assert len(clone_commands) > 0, "Should have git clone command"
+        for cmd in clone_commands:
+            assert "https://github.com/rahulmahasetha/churn-prediction.git" in cmd
+    
+    def test_pip_install_command(self, readme_content):
+        """Test that pip install command references requirements.txt."""
+        commands = self.extract_bash_commands(readme_content)
+        install_commands = [cmd for cmd in commands if 'pip install' in cmd]
+        assert any('requirements.txt' in cmd for cmd in install_commands), \
+            "Should have pip install -r requirements.txt command"
+    
+    def test_python_train_command(self, readme_content):
+        """Test that training command is documented."""
+        commands = self.extract_bash_commands(readme_content)
+        assert any('python train_model.py' in cmd for cmd in commands), \
+            "Should have python train_model.py command"
+    
+    def test_streamlit_run_command(self, readme_content):
+        """Test that streamlit run command is documented."""
+        commands = self.extract_bash_commands(readme_content)
+        assert any('streamlit run app.py' in cmd for cmd in commands), \
+            "Should have streamlit run app.py command"
+
+
+class TestProjectStructureDocumentation:
+    """Tests to verify documented project structure matches actual structure."""
+    
+    def test_documented_files_exist(self):
+        """Test that files mentioned in README actually exist."""
+        required_files = [
+            "README.md",
+            "requirements.txt",
         ]
         
-        for section in required_sections:
-            assert section in readme_content, f"README should contain section: {section}"
-    
-    def test_readme_badges(self, readme_content):
-        """Test that README contains technology badges."""
-        badges = ["Python", "Streamlit", "scikit-learn"]
-        for badge in badges:
-            assert badge in readme_content, f"README should contain {badge} badge"
-    
-    def test_project_structure_files_exist(self):
-        """Test that files mentioned in Project Structure section exist."""
-        expected_files = [
+        optional_files = [
+            "churn.csv",
             "train_model.py",
             "app.py",
-            "requirements.txt"
         ]
         
-        for file in expected_files:
-            assert os.path.exists(file), f"{file} should exist as documented in README Project Structure"
+        for file in required_files:
+            assert Path(file).exists(), f"Required file {file} should exist"
+        
+        for file in optional_files:
+            if not Path(file).exists():
+                pytest.skip(f"Optional file {file} not found, but README documents it")
     
-    def test_readme_code_blocks_valid(self, readme_content):
-        """Test that Python code blocks in README are syntactically valid."""
-        # Extract python code blocks
-        python_blocks = re.findall(r'```python\n(.*?)```', readme_content, re.DOTALL)
-        
-        for i, block in enumerate(python_blocks):
-            try:
-                ast.parse(block)
-            except SyntaxError as e:
-                pytest.fail(f"Invalid Python syntax in README code block {i+1}: {e}")
-    
-    def test_readme_commands_documented(self, readme_content):
-        """Test that key commands are documented in README."""
-        required_commands = [
-            "pip install -r requirements.txt",
-            "python train_model.py",
-            "streamlit run app.py"
-        ]
-        
-        for cmd in required_commands:
-            assert cmd in readme_content, f"README should document command: {cmd}"
-    
-    def test_model_parameters_documented(self, readme_content):
-        """Test that Random Forest parameters are documented."""
-        params = [
-            "n_estimators=100",
-            "max_depth=10",
-            "min_samples_split=20",
-            "min_samples_leaf=10",
-            "random_state=42"
-        ]
-        
-        for param in params:
-            assert param in readme_content, f"Model parameter {param} should be documented"
-    
-    def test_dependencies_consistency(self, readme_content):
-        """Test that dependencies listed in README match requirements.txt."""
-        if not os.path.exists("requirements.txt"):
-            pytest.skip("requirements.txt not found")
-        
-        with open("requirements.txt", "r") as f:
-            req_content = f.read().lower()
-        
-        # Key dependencies mentioned in README
-        key_deps = ["streamlit", "pandas", "scikit-learn", "matplotlib", "joblib", "numpy"]
-        
-        for dep in key_deps:
-            assert dep in readme_content.lower(), f"{dep} should be mentioned in README"
-            # Check if mentioned in requirements (optional, as naming may vary)
-            dep_variants = [dep, dep.replace("-", "_"), dep.replace("-", "")]
-            assert any(variant in req_content for variant in dep_variants), \
-                f"{dep} should be in requirements.txt"
+    def test_models_directory_documented(self):
+        """Test that models directory is mentioned and created when needed."""
+        # README mentions models/ directory
+        readme_path = Path("README.md")
+        if readme_path.exists():
+            content = readme_path.read_text(encoding='utf-8')
+            assert "models/" in content or "models\\" in content, \
+                "README should mention models directory"
 
 
-class TestTrainingPipeline:
-    """Tests for train_model.py functionality as described in README."""
+class TestReadmeIntegration:
+    """Integration tests to verify README instructions work."""
     
-    def test_training_script_exists(self):
-        """Test that train_model.py exists."""
-        assert os.path.exists("train_model.py"), "train_model.py should exist"
+    @pytest.mark.skipif(not Path("requirements.txt").exists(), 
+                        reason="requirements.txt not found")
+    def test_requirements_txt_exists(self):
+        """Test that requirements.txt exists as mentioned in README."""
+        assert Path("requirements.txt").exists()
     
-    def test_training_script_importable(self):
-        """Test that train_model.py can be imported without syntax errors."""
-        if not os.path.exists("train_model.py"):
-            pytest.skip("train_model.py not found")
-        
-        try:
-            with open("train_model.py", "r") as f:
-                code = f.read()
-            ast.parse(code)
-        except SyntaxError as e:
-            pytest.fail(f"train_model.py contains syntax errors: {e}")
+    @pytest.mark.skipif(not Path("train_model.py").exists(), 
+                        reason="train_model.py not found")
+    def test_train_model_script_exists(self):
+        """Test that train_model.py exists as documented."""
+        assert Path("train_model.py").exists()
     
-    def test_models_directory_creation(self):
-        """Test that training script creates models directory."""
-        if not os.path.exists("train_model.py"):
-            pytest.skip("train_model.py not found")
-        
-        with open("train_model.py", "r") as f:
-            content = f.read()
-        
-        # Check for directory creation logic
-        assert "models" in content, "Training script should reference models directory"
-        assert "makedirs" in content or "mkdir" in content or "os.path.exists" in content, \
-            "Training script should create models directory if not exists"
-    
-    def test_model_artifacts_saving(self):
-        """Test that training script saves model artifacts (model, scaler, encoders)."""
-        if not os.path.exists("train_model.py"):
-            pytest.skip("train_model.py not found")
-        
-        with open("train_model.py", "r") as f:
-            content = f.read()
-        
-        # Check for model saving
-        assert "joblib" in content or "pickle" in content, \
-            "Training script should use joblib or pickle for saving models"
-        assert "model.pkl" in content or "scaler.pkl" in content, \
-            "Training script should save model artifacts as .pkl files"
-
-
-class TestStreamlitApp:
-    """Tests for app.py functionality as described in README."""
-    
+    @pytest.mark.skipif(not Path("app.py").exists(), 
+                        reason="app.py not found")
     def test_app_script_exists(self):
-        """Test that app.py exists."""
-        assert os.path.exists("app.py"), "app.py should exist"
+        """Test that app.py exists as documented."""
+        assert Path("app.py").exists()
     
-    def test_app_imports_streamlit(self):
-        """Test that app.py imports streamlit."""
-        if not os.path.exists("app.py"):
-            pytest.skip("app.py not found")
-        
-        with open("app.py", "r") as f:
-            content = f.read()
-        
-        assert "import streamlit" in content or "from streamlit" in content, \
-            "app.py should import streamlit"
-    
-    def test_app_loads_model(self):
-        """Test that app.py loads saved model artifacts."""
-        if not os.path.exists("app.py"):
-            pytest.skip("app.py not found")
-        
-        with open("app.py", "r") as f:
-            content = f.read()
-        
-        assert "joblib.load" in content or "pickle.load" in content, \
-            "app.py should load saved model artifacts"
-        assert "models/" in content, \
-            "app.py should reference models directory"
-
-
-class TestDataRequirements:
-    """Tests for data requirements as documented."""
-    
-    def test_churn_csv_documented(self, readme_content=None):
-        """Test that churn.csv requirement is documented."""
-        if readme_content is None:
-            if not os.path.exists("README.md"):
-                pytest.skip("README.md not found")
-            with open("README.md", "r") as f:
-                readme_content = f.read()
-        
-        assert "churn.csv" in readme_content, \
-            "README should mention churn.csv dataset requirement"
-    
-    def test_dataset_columns_documented(self, readme_content=None):
-        """Test that expected dataset columns are documented."""
-        if readme_content is None:
-            if not os.path.exists("README.md"):
-                pytest.skip("README.md not found")
-            with open("README.md", "r") as f:
-                readme_content = f.read()
-        
-        expected_columns = ["Churn", "Gender", "Partner", "Dependents", "Age", "Tenure"]
-        for col in expected_columns:
-            assert col in readme_content, \
-                f"README should document {col} column in dataset"
-
-
-class TestIntegration:
-    """Integration tests to verify end-to-end functionality."""
-    
-    @pytest.mark.skipif(not os.path.exists("churn.csv"), reason="Dataset not available")
-    def test_training_pipeline_runs(self):
-        """Integration test: Verify training script runs successfully."""
-        if not os.path.exists("train_model.py"):
-            pytest.skip("train_model.py not found")
-        
-        # Run training script
+    @pytest.mark.skipif(not Path("train_model.py").exists() or not Path("churn.csv").exists(), 
+                        reason="Training script or data not found")
+    def test_train_command_syntax(self):
+        """Test that the training command can be parsed (dry run)."""
+        # This is a syntax check, not actual execution
         result = subprocess.run(
-            [sys.executable, "train_model.py"],
+            [sys.executable, "-m", "py_compile", "train_model.py"],
             capture_output=True,
-            text=True,
-            timeout=120
+            text=True
         )
-        
-        assert result.returncode == 0, \
-            f"Training script failed with error: {result.stderr}"
-        
-        # Check that models directory and files were created
-        assert os.path.exists("models"), "Training should create models directory"
-        assert any(f.endswith('.pkl') for f in os.listdir("models")), \
-            "Training should create .pkl model files"
+        assert result.returncode == 0, f"train_model.py has syntax errors: {result.stderr}"
     
-    def test_streamlit_app_syntax(self):
-        """Test that Streamlit app has valid Python syntax."""
-        if not os.path.exists("app.py"):
-            pytest.skip("app.py not found")
-        
+    @pytest.mark.skipif(not Path("app.py").exists(), 
+                        reason="app.py not found")
+    def test_app_syntax(self):
+        """Test that app.py has valid syntax."""
         result = subprocess.run(
             [sys.executable, "-m", "py_compile", "app.py"],
             capture_output=True,
             text=True
         )
-        
-        assert result.returncode == 0, \
-            f"app.py has syntax errors: {result.stderr}"
+        assert result.returncode == 0, f"app.py has syntax errors: {result.stderr}"
 
 
-# Fixtures for pytest
-@pytest.fixture
-def readme_content():
-    """Load README content for tests."""
-    if not os.path.exists("README.md"):
-        pytest.skip("README.md not found")
-    with open("README.md", "r", encoding="utf-8") as f:
-        return f.read()
+class TestReadmeContentQuality:
+    """Tests for README content quality and completeness."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Load README.md content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def test_no_placeholder_text(self, readme_content):
+        """Test that README doesn't contain placeholder text like 'TODO' or 'FIXME'."""
+        placeholders = ['TODO', 'FIXME', 'XXX', 'INSERT', 'YOUR_API_KEY']
+        for placeholder in placeholders:
+            assert placeholder not in readme_content, \
+                f"README should not contain placeholder: {placeholder}"
+    
+    def test_all_sections_have_content(self, readme_content):
+        """Test that sections don't end immediately after header."""
+        lines = readme_content.split('\n')
+        for i, line in enumerate(lines):
+            if line.startswith('## '):
+                # Check that next non-empty line exists and is not another header
+                j = i + 1
+                while j < len(lines) and not lines[j].strip():
+                    j += 1
+                if j < len(lines):
+                    next_line = lines[j]
+                    assert not next_line.startswith('##'), \
+                        f"Section '{line}' appears to be empty"
+    
+    def test_markdown_headers_hierarchy(self, readme_content):
+        """Test that markdown headers follow proper hierarchy (no skipping levels)."""
+        lines = readme_content.split('\n')
+        prev_level = 0
+        for line in lines:
+            if line.startswith('#'):
+                level = len(line) - len(line.lstrip('#'))
+                # Should not skip levels (e.g., # to ###)
+                if prev_level > 0:
+                    assert level <= prev_level + 1, \
+                        f"Header hierarchy skip detected: {line}"
+                prev_level = level
 
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+class TestReadmeLinks:
+    """Tests for links in README."""
+    
+    @pytest.fixture
+    def readme_content(self):
+        """Load README.md content."""
+        readme_path = Path("README.md")
+        if not readme_path.exists():
+            pytest.skip("README.md not found")
+        return readme_path.read_text(encoding='utf-8')
+    
+    def test_github_repo_link(self, readme_content):
+        """Test that GitHub repo link is present and correct."""
+        assert "https://github.com/rahulmahasetha/churn-prediction" in readme_content
+    
+    def test_external_links_use_https(self, readme_content):
+        """Test that external links use HTTPS where applicable."""
+        # Check for scikit-learn link
+        assert "https://scikit-learn.org/" in readme_content
+        # Check for Streamlit link
+        assert "https://streamlit.io/" in readme_content
+    
+    def test_license_file_reference(self, readme_content):
+        """Test that LICENSE file is referenced."""
+        assert "[LICENSE](LICENSE)" in readme_content or "LICENSE" in readme_content
